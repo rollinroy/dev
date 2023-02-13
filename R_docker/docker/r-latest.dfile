@@ -1,0 +1,22 @@
+ARG base_name=ubuntu-20.04-hpc
+ARG itag=latest
+FROM $base_name:$itag
+
+#===========================================
+# install the latest R (4.2.x)
+# add R 4.x repository from CRAN to apt
+# update indices(see https://cloud.r-project.org/bin/linux/ubuntu/)
+RUN apt-get update -qq
+
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
+RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+
+# install R and packages
+RUN apt-get --assume-yes install --no-install-recommends r-base
+RUN add-apt-repository ppa:c2d4u.team/c2d4u4.0+
+RUN apt-get --assume-yes  install --no-install-recommends r-cran-tidyverse
+
+# chmod /usr/local/lib/R so all can write to it
+RUN chmod -R 777 /usr/local/lib/R
+RUN chmod -R g+s /usr/local/lib/R

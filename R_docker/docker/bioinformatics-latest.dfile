@@ -1,0 +1,81 @@
+ARG base_name=r-4.2.2
+ARG itag=latest
+FROM $base_name:$itag
+
+#===========================================
+# apps:
+#   dxtoolkit (dnanexus sdk)
+#   picard
+#   samtools
+#   bcftools
+#   htslib
+#   bwa
+#   bowtie2
+#   tophat
+#   vcftools
+#   plink
+#   ensembl-vep
+#   bedtools
+#   trim-galore
+#   fastqc
+#   tabix
+#   bbmap
+#   gatk4
+#   python modules (HTSeq fasteners)
+
+
+RUN echo "Installing dxpy"
+RUN pip3 install dxpy
+
+RUN echo "Installing multiple tools"
+RUN apt-get update && apt-get install -y \
+  picard-tools \
+  samtools \
+  bcftools \
+  bwa \
+  bowtie2 \
+  vcftools \
+  plink1.9  \
+  bedtools \
+  trim-galore \
+  fastqc \
+  tabix \
+  bbmap
+
+# tophat
+RUN echo "Installing tophat"
+RUN mkdir -p /usr/local/src/tophat
+ADD tophat-2.1.1.Linux_x86_64.tar.gz /usr/local/src/tophat
+RUN cd /usr/local/src/tophat && \
+  cd tophat-2.1.1.Linux_x86_64/ && \
+  cp tophat2 /usr/local/bin && \
+  cp tophat /usr/local/bin
+
+# ensembl-vep
+RUN echo "Installing ensembl-vep"
+RUN mkdir -p /usr/local/src/ensembl-vep
+ENV PERL_MM_USE_DEFAULT=1
+RUN cpan -i DBI
+RUN cd /usr/local/src/ensembl-vep && \
+  git clone https://github.com/Ensembl/ensembl-vep.git && \
+  cd ensembl-vep && \
+  cpan App::cpanminus && \
+  cpanm Module::Build && \
+  cpanm --force XML::DOM::XPath && \
+  cpanm Bio::Root::Version && \
+  cpanm DBI && \
+  perl INSTALL.pl -a a
+RUN ln -s /usr/local/src/ensembl-vep/ensembl-vep/vep /usr/local/bin/vep
+RUN ln -s /usr/local/src/ensembl-vep/ensembl-vep/haplo /usr/local/bin/haplo
+
+# python stuff
+RUN pip3 install HTSeq
+RUN pip3 install fasteners
+RUN pip3 install pyodbc
+
+# gatk4
+RUN mkdir /usr/local/src/gatk4
+RUN cd /usr/local/src/gatk4 && \
+    wget https://github.com/broadinstitute/gatk/releases/download/4.2.6.0/gatk-4.2.6.0.zip && \
+    unzip gatk-4.2.6.0.zip && \
+    ln -s /usr/local/src/gatk4/gatk-4.2.6.0/gatk /usr/local/bin/gatk

@@ -1,0 +1,26 @@
+ARG base_name=bioinformatics-4.2.2
+ARG itag=latest
+FROM $base_name:$itag
+ARG rs_version=2022.12.0-353
+
+# rstudio server
+RUN apt-get update && apt-get install -y gdebi-core
+
+# create the R target install
+RUN if [ ! -d /usr/local/src/Rstudio ]; then \
+       mkdir /usr/local/src/Rstudio;\
+    fi
+RUN echo Install rstudio server version ${rs_version} ...
+RUN cd /usr/local/src/Rstudio && \
+    wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-${rs_version}-amd64.deb && \
+    gdebi -n rstudio-server-${rs_version}-amd64.deb
+
+#RUN rstudio-server start
+
+# expose port 8787 and create the default command to run the server as
+# a non-daemon (so when started detached the image hangs around)
+EXPOSE 8787
+
+CMD ["/usr/lib/rstudio-server/bin/rserver", "--server-daemonize", "off"]
+
+#docker run -d -t -p 127.0.0.1:8788:8787  -v /Volumes/WorkSSD/R_Work:/home/royboy -w /home/royboy rstudio-4.2.2

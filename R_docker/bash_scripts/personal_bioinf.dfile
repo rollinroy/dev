@@ -1,0 +1,13 @@
+ARG base_name=m2gen/bioinformatics-4.2.1
+ARG itag=latest
+FROM $base_name:$itag
+ARG user
+ARG user_id
+
+# create the user account
+RUN adduser --ingroup m2gen --uid $user_id --disabled-password --gecos GECOS $user && \
+  usermod -aG sudo $user && \
+  echo "$user:$user" | chpasswd
+
+# add tmux
+RUN apt-get update && apt-get install -y tmux

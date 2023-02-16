@@ -103,3 +103,7 @@ RUN addgroup mac --gid=1001 && \
     adduser --ingroup mac --uid 1000 --disabled-password --gecos GECOS royboy && \
     usermod -aG sudo royboy && \
     echo "royboy:royboy" | chpasswd
+
+# suppress passwd for sudoers
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> \
+    /etc/sudoers

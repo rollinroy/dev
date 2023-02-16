@@ -18,9 +18,10 @@ RUN cd /usr/local/src/Rstudio && \
 #RUN rstudio-server start
 
 # expose port 8787 and create the default command to run the server as
-# a non-daemon (so when started detached the image hangs around)
+# a non-daemon (so when started detached the server stays running)
+
 EXPOSE 8787
+USER royboy
+CMD sudo /usr/lib/rstudio-server/bin/rserver --server-daemonize off
 
-CMD ["/usr/lib/rstudio-server/bin/rserver", "--server-daemonize", "off"]
-
-#docker run -d -t -p 127.0.0.1:8788:8787  -v /Volumes/WorkSSD/R_Work:/home/royboy -w /home/royboy rstudio-4.2.2
+#docker run -d -t -p 8788:8787  -v /Volumes/WorkSSD/R_Work:/home/royboy -w /home/royboy rstudio-4.2.2

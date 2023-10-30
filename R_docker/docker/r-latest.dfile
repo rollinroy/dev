@@ -1,22 +1,47 @@
 ARG base_name=ubuntu-20.04-hpc
 ARG itag=latest
 FROM $base_name:$itag
+ARG arch_type
+ARG ra_version=4.3.1
 
-#===========================================
-# install the latest R (4.2.x)
-# add R 4.x repository from CRAN to apt
-# update indices(see https://cloud.r-project.org/bin/linux/ubuntu/)
-RUN apt-get update -qq
+ENV R_VERSION=$ra_version
 
-RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
-# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
-RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+# download R
+RUN echo "Downloading R-$R_VERSION ..."; \
+    mkdir /usr/local/src/R && \
+    cd /usr/local/src/R && \
+    RV=`echo $R_VERSION | cut -f1 -d "."` && \
+    wget --no-check-certificate https://cran.r-project.org/src/base/R-$RV/R-$R_VERSION.tar.gz && \
+    tar zxf R-$R_VERSION.tar.gz; \
+    mkdir /usr/local/R-$R_VERSION
 
-# install R and packages
-RUN apt-get --assume-yes install --no-install-recommends r-base
-RUN add-apt-repository --yes ppa:c2d4u.team/c2d4u4.0+
-RUN apt-get --assume-yes  install --no-install-recommends r-cran-tidyverse
+# configure and build R (based on arch type)
+RUN if [ -z $arch_type ]; then \
+      ARCH=`uname -m`; \
+    else \
+      ARCH=$arch_type; \
+    fi; \
+    echo "arch is $ARCH"; \
+    cd /usr/local/src/R/R-$R_VERSION && \
+    if [ "$ARCH" != "${ARCH%%arm*}" ]; then \
+      echo "Configuring R without MKL"; \
+      ./configure --enable-R-shlib --enable-R-shlib --enable-threads=posix --prefix=/usr/local/R-"$R_VERSION"  --with-blas --with-lapack && \
+      echo "Configuring is complete"; \
+    else \
+      echo "Configuring R with parallel MKL"; \
+      GNU_LIB_PATH=/usr/lib/x86_64-linux-gnu; \
+      export LD_LIBRARY_PATH=$GNU_LIB_PATH; \
+      MKL="-L${GNU_LIB_PATH} -lmkl_gf_lp64 -lmkl_core -lmkl_gnu_thread -dl -fopenmp"; \
+      ./configure --enable-R-shlib --enable-R-shlib --enable-threads=posix --prefix=/usr/local/R-"$R_VERSION"  --with-blas="$MKL" --with-lapack && \
+      echo "Configuring is complete"; \
+    fi; \
+      echo "Making and installing R ..."; \
+      make && \
+      make check; \
+      make info; \
+      make install; \
+      echo "Building and installing R is done"
 
-# chmod /usr/local/lib/R so all can write to it
-RUN chmod -R 777 /usr/local/lib/R
-RUN chmod -R g+s /usr/local/lib/R
+# create link to R/Rscript
+RUN ln -sf /usr/local/R-$R_VERSION/lib/R/bin/R /usr/local/bin/R; \
+    ln -sf /usr/local/R-$R_VERSION/lib/R/bin/Rscript /usr/local/bin/Rscript

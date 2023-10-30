@@ -1,7 +1,8 @@
-ARG base_name=bioinformatics-4.2.2
+ARG base_name=r-4.3.1
 ARG itag=latest
 FROM $base_name:$itag
-ARG rs_version=2022.12.0-353
+ARG arch_type
+ARG rs_version=2023.09.0-463
 
 # rstudio server
 RUN apt-get update && apt-get install -y gdebi-core
@@ -12,9 +13,8 @@ RUN if [ ! -d /usr/local/src/Rstudio ]; then \
     fi
 RUN echo Install rstudio server version ${rs_version} ...
 RUN cd /usr/local/src/Rstudio && \
-    wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-${rs_version}-amd64.deb && \
+    wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-${rs_version}-amd64.deb && \
     gdebi -n rstudio-server-${rs_version}-amd64.deb
-
 #RUN rstudio-server start
 
 # expose port 8787 and create the default command to run the server as
@@ -24,4 +24,4 @@ EXPOSE 8787
 USER royboy
 CMD sudo /usr/lib/rstudio-server/bin/rserver --server-daemonize off
 
-#docker run -d -t -p 8788:8787  -v /Volumes/WorkSSD/R_Work:/home/royboy -w /home/royboy rstudio-4.2.2
+#docker run -d -t -p 8788:8787  -v /Volumes/WorkSSD/work_roy/R_Work:/home/royboy -w /home/royboy rstudio-4.3.1

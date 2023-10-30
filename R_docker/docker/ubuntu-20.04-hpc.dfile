@@ -1,6 +1,8 @@
 ARG base_os=ubuntu
 ARG itag=20.04
-FROM $base_os:$itag
+ARG ubuntu_rep
+FROM $ubuntu_rep$base_os:$itag
+ARG arch_type
 
 # install base packages for development, r, etc
 RUN apt-get update && apt-get install -y \
@@ -88,11 +90,23 @@ RUN apt-get update && apt-get install -y \
     libopenmpi3 \
     openmpi-doc
 
-# mkl - note: installing mkl installs MKL blas and lapack -- and blas/lapack is required for many apps like R
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y intel-mkl
-
-RUN unlink /etc/alternatives/libblas.so.3-x86_64-linux-gnu
-RUN ln -s /usr/lib/x86_64-linux-gnu/libmkl_rt.so /etc/alternatives/libblas.so.3-x86_64-linux-gnu
+# mkl - note: installing mkl installs MKL blas and lapack --
+# and blas/lapack is required for many apps like R. For non-ARM only
+RUN if [ -z $arch_type ]; then \
+      ARCH=`uname -m`; \
+    else \
+      ARCH=$arch_type; \
+    fi && \
+    echo "arch is $ARCH"; \
+    if [ "$ARCH" != "${ARCH%%arm*}" ]; then \
+      echo "mkl doesn't supprt $ARCH and is not installed"; \
+    else \
+      echo "installing mkl"; \
+      DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y intel-mkl && \
+      update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so; \
+      update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so; \
+      echo "mkl installed"; \
+    fi
 
 # install tab-complete for docker
 RUN curl -L https://raw.githubusercontent.com/docker/compose/v2.7.0/contrib/completion/bash/docker-compose  \

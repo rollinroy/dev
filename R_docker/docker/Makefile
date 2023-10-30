@@ -1,18 +1,31 @@
 # common config macros (changing)
 OS_VERSION = 20.04
-R_VERSION=4.2.2
-RS_VERSION=2022.12.0-353
-
-
+R_VERSION=4.3.1
+RS_VERSION=2023.09.0-463
+ARCH_HOST := $(shell uname -m)
+ARM_BUILD=arm64v8
+AMD_BUILD=amd64
 # other common macros (not changing much)
 DC = docker
 DB = $(DC) build
-D_REP = 
+D_REP =
 DO_FLAGS =
+# conditionals
 ifdef $(USECACHE)
 	CACHE_OPT =
 else
 	CACHE_OPT = --no-cache
+endif
+
+ifdef ARCH_TYPE
+	UBUNTU_REP = $(ARCH_TYPE)/
+endif
+ifeq ($(ARCH_TYPE),$(ARM_BUILD))
+	UBUNTU_REP = $(ARM_BUILD)/
+	PLATFORM_OPT=--platform=arm64v8
+else ifeq ($(ARCH_TYPE),$(AMD_BUILD))
+	UBUNTU_REP = $(AMD_BUILD)/
+	PLATFORM_OPT=--platform=linux/amd64
 endif
 
 # base name macros
@@ -52,15 +65,19 @@ D_PUSH = $(addsuffix .push,$(D_IMAGES))
 
 all: $(D_ALL_IMAGES)
 	@echo ">>> Build is complete"
+	@echo ">>> UBUNTU_REP: $(UBUNTU_REP)"
+	@echo ">>> PLATFORM_OPT of build: $(PLATFORM_OPT)"
 
 push: $(D_PUSH)
 	@echo ">>> Push is complete"
 
 $(DI_OS).image: $(DF_OS)
 	@echo ">>> $(shell date)" Building $(D_REP)$(DI_OS):$(DT_OS)
-	$(DB) -t $(D_REP)$(DI_OS):$(DT_OS) $(DB_OPTS) \
+	$(DB) -t $(D_REP)$(DI_OS):$(DT_OS) $(DB_OPTS) $(PLATFORM_OPT) \
         --progress plain \
         --build-arg base_os=$(DB_LINUX) \
+        --build-arg ubuntu_rep=$(UBUNTU_REP) \
+        --build-arg arch_type=$(ARCH_TYPE) \
         --build-arg itag=$(OS_VERSION) \
         -f $(DF_OS) . 2>&1 | tee build_$(DI_OS).log
 	$(DC) tag $(D_REP)$(DI_OS):$(DT_OS) $(D_REP)$(DI_OS):latest
@@ -69,8 +86,10 @@ $(DI_OS).image: $(DF_OS)
 $(DI_R).image: $(DF_R) $(DI_OS).image
 	@echo ">>> $(shell date)" Building $(D_REP)$(DI_R):$(DT_R)
 	export DOCKER_BUILDKIT=0
-	$(DB) -t $(D_REP)$(DI_R):$(DT_R) $(DB_OPTS) \
+	$(DB) -t $(D_REP)$(DI_R):$(DT_R) $(DB_OPTS) $(PLATFORM_OPT) \
         --progress plain \
+        --build-arg ra_version=$(R_VERSION) \
+        --build-arg arch_type=$(ARCH_TYPE) \
         --build-arg base_name=$(D_REP)$(DI_OS) \
         --build-arg itag=latest \
         -f $(DF_R) . 2>&1 | tee  build_$(DI_R).log
@@ -79,21 +98,23 @@ $(DI_R).image: $(DF_R) $(DI_OS).image
 
 $(DI_BIOINF).image: $(DF_BIOINF) $(DI_R).image
 	@echo ">>> $(shell date)" Building $(D_REP)$(DI_BIOINF):$(DT_BIOINF)
-	$(DB) -t $(D_REP)$(DI_BIOINF):$(DT_BIOINF) $(DB_OPTS) \
+	$(DB) -t $(D_REP)$(DI_BIOINF):$(DT_BIOINF) $(DB_OPTS) $(PLATFORM_OPT) \
         --progress plain \
         --build-arg base_name=$(D_REP)$(DI_R) \
         --build-arg rs_version=$(RS_VERSION) \
+        --build-arg arch_type=$(ARCH_TYPE) \
         --build-arg itag=latest \
         -f $(DF_BIOINF) . 2>&1 | tee build_$(DI_BIOINF).log
 	$(DC) tag $(D_REP)$(DI_BIOINF):$(DT_BIOINF) $(D_REP)$(DI_BIOINF):latest
 	touch $(DI_BIOINF).image
 
-$(DI_RSTUDIO).image: $(DF_RSTUDIO) $(DI_BIOINF).image
+$(DI_RSTUDIO).image: $(DF_RSTUDIO) $(DI_R).image
 	@echo ">>> $(shell date)" Building $(D_REP)$(DI_RSTUDIO):$(DT_RSTUDIO)
-	$(DB) -t $(D_REP)$(DI_RSTUDIO):$(DT_RSTUDIO) $(DB_OPTS)  \
+	$(DB) -t $(D_REP)$(DI_RSTUDIO):$(DT_RSTUDIO) $(DB_OPTS) $(PLATFORM_OPT) \
         --progress plain \
         --build-arg rs_version=$(RS_VERSION) \
-        --build-arg base_name=$(D_REP)$(DI_BIOINF) \
+        --build-arg base_name=$(D_REP)$(DI_R) \
+        --build-arg arch_type=$(ARCH_TYPE) \
         --build-arg itag=latest \
         -f $(DF_RSTUDIO) . 2>&1 | tee build_$(DI_RSTUDIO).log
 	$(DC) tag $(D_REP)$(DI_RSTUDIO):$(DT_RSTUDIO) $(D_REP)$(DI_RSTUDIO):latest

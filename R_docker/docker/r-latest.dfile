@@ -16,31 +16,16 @@ RUN echo "Downloading R-$R_VERSION ..."; \
     mkdir /usr/local/R-$R_VERSION
 
 # configure and build R (based on arch type)
-RUN if [ -z $arch_type ]; then \
-      ARCH=`uname -m`; \
-    else \
-      ARCH=$arch_type; \
-    fi; \
-    echo "arch is $ARCH"; \
-    cd /usr/local/src/R/R-$R_VERSION && \
-    if [ "$ARCH" != "${ARCH%%arm*}" ]; then \
-      echo "Configuring R without MKL"; \
-      ./configure --enable-R-shlib --enable-R-shlib --enable-threads=posix --prefix=/usr/local/R-"$R_VERSION"  --with-blas --with-lapack && \
-      echo "Configuring is complete"; \
-    else \
-      echo "Configuring R with parallel MKL"; \
-      GNU_LIB_PATH=/usr/lib/x86_64-linux-gnu; \
-      export LD_LIBRARY_PATH=$GNU_LIB_PATH; \
-      MKL="-L${GNU_LIB_PATH} -lmkl_gf_lp64 -lmkl_core -lmkl_gnu_thread -dl -fopenmp"; \
-      ./configure --enable-R-shlib --enable-R-shlib --enable-threads=posix --prefix=/usr/local/R-"$R_VERSION"  --with-blas="$MKL" --with-lapack && \
-      echo "Configuring is complete"; \
-    fi; \
-      echo "Making and installing R ..."; \
-      make && \
-      make check; \
-      make info; \
-      make install; \
-      echo "Building and installing R is done"
+RUN echo "Configuring R with BLAS (defaults to openblas previously installed)"; \
+    cd /usr/local/src/R/R-$R_VERSION; \
+    ./configure --enable-R-shlib --prefix=/usr/local/R-"$R_VERSION"  --with-blas --with-lapack | grep -i blas && \
+    echo "Configuring is complete"; \
+    echo "Making and installing R ..."; \
+    make && \
+    make check; \
+    make info; \
+    make install; \
+    echo "Building and installing R is done"
 
 # create link to R/Rscript
 RUN ln -sf /usr/local/R-$R_VERSION/lib/R/bin/R /usr/local/bin/R; \

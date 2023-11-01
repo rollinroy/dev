@@ -1,8 +1,13 @@
-ARG base_name=r-4.3.1
+ARG base_name=r-4.3.1-amd64
 ARG itag=latest
 FROM $base_name:$itag
 ARG arch_type
-ARG rs_version=2023.09.0-463
+ARG rs_version=2023.09.1-494
+
+# arm not supported
+RUN if [ "$arch_type" != "${ARCH%%arm*}" ] && then \
+      echo "architecture $arch_type not supported."; \
+    fi
 
 # rstudio server
 RUN apt-get update && apt-get install -y gdebi-core

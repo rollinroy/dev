@@ -1,10 +1,11 @@
 # common config macros (changing)
-OS_VERSION = 20.04
+OS_VERSION = 22.04
 R_VERSION=4.3.1
 RS_VERSION=2023.09.0-463
 ARCH_HOST := $(shell uname -m)
 ARM_BUILD=arm64v8
 AMD_BUILD=amd64
+IMAGE_TYPE=amd
 # other common macros (not changing much)
 DC = docker
 DB = $(DC) build
@@ -17,15 +18,15 @@ else
 	CACHE_OPT = --no-cache
 endif
 
-ifdef ARCH_TYPE
-	UBUNTU_REP = $(ARCH_TYPE)/
-endif
-ifeq ($(ARCH_TYPE),$(ARM_BUILD))
+ifeq ($(IMAGE_TYPE),arm)
+	ARCH_TYPE=$(ARM_BUILD)
 	UBUNTU_REP = $(ARM_BUILD)/
-	PLATFORM_OPT=--platform=arm64v8
-else ifeq ($(ARCH_TYPE),$(AMD_BUILD))
+	PLATFORM_OPT=--platform=linux/arm64
+else
+	ARCH_TYPE=$(AMD_BUILD)
 	UBUNTU_REP = $(AMD_BUILD)/
 	PLATFORM_OPT=--platform=linux/amd64
+	IMAGE_TYPE = amd
 endif
 
 # base name macros
@@ -50,10 +51,10 @@ DT_BIOINF = $(IMAGE_DATE)
 DT_RSTUDIO = $(IMAGE_DATE)
 
 # macros of docker image names
-DI_OS = $(DB_OS)
-DI_R = $(DB_R)
-DI_BIOINF = $(DB_BIOINF)
-DI_RSTUDIO = $(DB_RSTUDIO)
+DI_OS = $(DB_OS)-$(IMAGE_TYPE)
+DI_R = $(DB_R)-$(IMAGE_TYPE)
+DI_BIOINF = $(DB_BIOINF)-$(IMAGE_TYPE)
+DI_RSTUDIO = $(DB_RSTUDIO)-$(IMAGE_TYPE)
 
 D_IMAGES = $(DI_OS) $(DI_R) $(DI_BIOINF) $(DI_RSTUDIO)
 D_ALL_IMAGES = $(addsuffix .image,$(D_IMAGES))

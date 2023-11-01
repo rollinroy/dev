@@ -17,14 +17,13 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update && apt-get install 
 RUN apt-get update && apt-get install -y \
   sudo \
   build-essential \
-  python-dev \
   zlib1g-dev \
   git \
   nodejs \
   npm \
-  gnome-tweak-tool \
+  gnome-tweaks \
   openjdk-8-jdk \
-  python-numpy \
+  python3-numpy \
   wget \
   cpio \
   iputils-ping \
@@ -65,18 +64,15 @@ RUN apt-get update && apt-get install -y \
   tesseract-ocr-eng \
   cmake  \
   python3-pip \
+#  python2 \
   curl \
   rsync
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# install python 2.7 https://linuxconfig.org/install-python-2-on-ubuntu-20-04-focal-fossa-linux
-RUN apt-add-repository universe
-RUN apt-get update && apt-get install -y python2-minimal
-
-# config python 2.7 to be "python" https://linuxconfig.org/ubuntu-20-04-python-version-switch-manager
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 2
+# config python3 to be "python" https://linuxconfig.org/ubuntu-20-04-python-version-switch-manager
+#RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+#RUN update-alternatives --install /usr/bin/python python /usr/bin/python2 1
 
 # hpc related
 RUN apt-get update && apt-get install -y \
@@ -90,23 +86,10 @@ RUN apt-get update && apt-get install -y \
     libopenmpi3 \
     openmpi-doc
 
-# mkl - note: installing mkl installs MKL blas and lapack --
-# and blas/lapack is required for many apps like R. For non-ARM only
-RUN if [ -z $arch_type ]; then \
-      ARCH=`uname -m`; \
-    else \
-      ARCH=$arch_type; \
-    fi && \
-    echo "arch is $ARCH"; \
-    if [ "$ARCH" != "${ARCH%%arm*}" ]; then \
-      echo "mkl doesn't supprt $ARCH and is not installed"; \
-    else \
-      echo "installing mkl"; \
-      DEBIAN_FRONTEND=noninteractive apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y intel-mkl && \
-      update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so; \
-      update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so; \
-      echo "mkl installed"; \
-    fi
+# blas mkl was used previously but is not available for arm architecture; but
+# libopenblas provides a performance blas similar to mkl and is supported on
+# all platforms (at least for 22.04)
+RUN apt-get update && apt-get install -y libopenblas-openmp-dev
 
 # install tab-complete for docker
 RUN curl -L https://raw.githubusercontent.com/docker/compose/v2.7.0/contrib/completion/bash/docker-compose  \

@@ -1,7 +1,7 @@
 # common config macros (changing)
 OS_VERSION = 22.04
 R_VERSION=4.3.1
-RS_VERSION=2023.09.0-463
+RS_VERSION=2023.09.1-494
 ARCH_HOST := $(shell uname -m)
 ARM_BUILD=arm64v8
 AMD_BUILD=amd64

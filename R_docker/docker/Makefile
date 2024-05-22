@@ -1,7 +1,7 @@
 # common config macros (changing)
-OS_VERSION = 22.04
-R_VERSION=4.3.1
-RS_VERSION=2023.09.1-494
+OS_VERSION = 24.04
+R_VERSION=4.4.0
+RS_VERSION=2024.04.1-748
 ARCH_HOST := $(shell uname -m)
 ARM_BUILD=arm64v8
 AMD_BUILD=amd64
@@ -11,11 +11,11 @@ DC = docker
 DB = $(DC) build
 D_REP =
 DO_FLAGS =
-# conditionals
-ifdef $(USECACHE)
+# use cache when building
+ifdef USECACHE
 	CACHE_OPT =
 else
-	CACHE_OPT = --no-cache
+  CACHE_OPT = --no-cache
 endif
 
 ifeq ($(IMAGE_TYPE),arm)
@@ -115,7 +115,7 @@ $(DI_RSTUDIO).image: $(DF_RSTUDIO) $(DI_R).image
         --progress plain \
         --build-arg rs_version=$(RS_VERSION) \
         --build-arg base_name=$(D_REP)$(DI_R) \
-        --build-arg arch_type=$(ARCH_TYPE) \
+        --build-arg image_type=$(IMAGE_TYPE) \
         --build-arg itag=latest \
         -f $(DF_RSTUDIO) . 2>&1 | tee build_$(DI_RSTUDIO).log
 	$(DC) tag $(D_REP)$(DI_RSTUDIO):$(DT_RSTUDIO) $(D_REP)$(DI_RSTUDIO):latest

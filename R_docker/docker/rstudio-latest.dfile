@@ -1,28 +1,28 @@
-ARG base_name=r-4.3.1-amd64
+ARG base_name
 ARG itag=latest
 FROM $base_name:$itag
-ARG arch_type
-ARG rs_version=2023.09.1-494
-
-# arm not supported
-RUN if [ "$arch_type" = "amd64" ]; then \
-      echo "architecture $arch_type supports rstudio server."; \
-    else \
-      echo "architecture $arch_type does not rstudio server."; \
-      exit -1; \
-    fi
-
-# rstudio rserver
-RUN apt-get update && apt-get install -y gdebi-core
+ARG image_type
+ARG rs_version=2024.04.1-748
 
 # create the R target install
 RUN if [ ! -d /usr/local/src/Rstudio ]; then \
        mkdir /usr/local/src/Rstudio;\
     fi
-RUN echo Install rstudio server version ${rs_version} ...
-RUN cd /usr/local/src/Rstudio && \
-    wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-${rs_version}-amd64.deb && \
-    gdebi -n rstudio-server-${rs_version}-amd64.deb
+# get the installer
+RUN apt-get update && apt-get install -y gdebi-core
+
+# download and install
+RUN if [ "$image_type" = "amd64" ]; then \
+      echo "Installing RStudio Server for amd"; \
+      cd /usr/local/src/Rstudio && \
+      wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-${rs_version}-amd64.deb && \
+      gdebi -n rstudio-server-${rs_version}-amd64.deb; \
+    else \
+      echo "Installing RStudio Server for arm"; \
+      cd /usr/local/src/Rstudio && \
+      wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2024.07.0-daily-145-arm64.deb  && \
+      gdebi -n rstudio-server-2024.07.0-daily-145-arm64.deb; \
+    fi
 #RUN rstudio-server start
 
 # expose port 8787 and create the default command to run the server as
@@ -32,4 +32,5 @@ EXPOSE 8787
 USER royboy
 CMD sudo /usr/lib/rstudio-server/bin/rserver --server-daemonize off
 
-#docker run -d -t -p 8788:8787  -v /Volumes/WorkSSD/work_roy/R_Work:/home/royboy -w /home/royboy rstudio-4.3.1-amd
+# run docker detached specifying rstudio-$(base_name)-$(image_type)
+# docker run -d -t -p 8788:8787  -v /Volumes/WorkSSD/work_roy/R_Work:/home/royboy -w /home/royboy rstudio-4.4.0-arm

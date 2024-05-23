@@ -56,8 +56,10 @@ RUN apt-get update && apt-get install -y \
 
 # tophat
 RUN echo "Installing tophat"
-RUN mkdir -p /usr/local/src/tophat
-ADD tophat-2.1.1.Linux_x86_64.tar.gz /usr/local/src/tophat
+RUN mkdir -p /usr/local/src/tophat && \
+    cd /usr/local/src/tophat && \
+    wget https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz && \
+    tar -xf tophat-2.1.1.Linux_x86_64.tar.gz
 RUN cd /usr/local/src/tophat && \
   cd tophat-2.1.1.Linux_x86_64/ && \
   cp tophat2 /usr/local/bin && \

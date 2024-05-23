@@ -12,7 +12,14 @@ RUN if [ ! -d /usr/local/src/Rstudio ]; then \
 RUN apt-get update && apt-get install -y gdebi-core
 
 # download and install
-RUN if [ "$image_type" = "amd64" ]; then \
+RUN if [ "$image_type" = "amd" ]; then \
+      echo "download and install libssl1/openssl1 required for RStudio Server ..."; \
+      wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1f-1ubuntu2.22_amd64.deb; \
+      wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb; \
+      wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_1.1.1f-1ubuntu2.22_amd64.deb; \
+      dpkg -i libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb; \
+      dpkg -i libssl-dev_1.1.1f-1ubuntu2.22_amd64.deb; \
+      dpkg -i openssl_1.1.1f-1ubuntu2.22_amd64.deb; \
       echo "Installing RStudio Server for amd"; \
       cd /usr/local/src/Rstudio && \
       wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-${rs_version}-amd64.deb && \

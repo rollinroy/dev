@@ -9,7 +9,7 @@ IMAGE_TYPE=amd
 # other common macros (not changing much)
 DC = docker
 DB = $(DC) build
-D_REP =
+D_REP = rollinroy
 DO_FLAGS =
 # use cache when building
 ifdef USECACHE

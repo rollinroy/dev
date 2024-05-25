@@ -1,4 +1,4 @@
-ARG base_name=r-4.3.1
+ARG base_name
 ARG itag=latest
 FROM $base_name:$itag
 ARG arch_type

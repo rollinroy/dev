@@ -1,7 +1,7 @@
 # common config macros (changing)
 OS_VERSION = 24.04
-R_VERSION=4.4.0
-RS_VERSION=2024.04.1-748
+R_VERSION=4.4.2
+RS_VERSION=2024.09.1-394
 ARCH_HOST := $(shell uname -m)
 ARM_BUILD=arm64v8
 AMD_BUILD=amd64
@@ -9,7 +9,7 @@ IMAGE_TYPE=amd
 # other common macros (not changing much)
 DC = docker
 DB = $(DC) build
-D_REP = rollinroy
+D_REP = rollinroy/
 DO_FLAGS =
 # use cache when building
 ifdef USECACHE

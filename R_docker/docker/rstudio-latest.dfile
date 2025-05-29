@@ -27,8 +27,8 @@ RUN if [ "$image_type" = "amd" ]; then \
     else \
       echo "Installing RStudio Server for arm"; \
       cd /usr/local/src/Rstudio && \
-      wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2024.07.0-daily-145-arm64.deb  && \
-      gdebi -n rstudio-server-2024.07.0-daily-145-arm64.deb; \
+      wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2025.08.0-daily-158-arm64.deb  && \
+      gdebi -n rstudio-server-2025.08.0-daily-158-arm64.deb; \
     fi
 #RUN rstudio-server start
 

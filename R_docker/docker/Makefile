@@ -3,9 +3,14 @@ OS_VERSION = 24.04
 R_VERSION=4.4.2
 RS_VERSION=2024.09.1-394
 ARCH_HOST := $(shell uname -m)
+ifeq ($(ARCH_HOST),arm64)
+	IMAGE_TYPE=arm
+else
+	IMAGE_TYPE=amd
+endif
 ARM_BUILD=arm64v8
 AMD_BUILD=amd64
-IMAGE_TYPE=amd
+#IMAGE_TYPE=amd
 # other common macros (not changing much)
 DC = docker
 DB = $(DC) build

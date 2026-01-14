@@ -4,6 +4,13 @@ n <-  5000
 A <- matrix (runif (m*n),m,n)
 # Matrix multiply
 system.time (B <- crossprod(A))
+
+# test using multiple cores (2nd case doesn't work with veclib)
+#A <- matrix (rnorm(m*n),m)
+#library(parallel)
+#system.time(res <- mclapply(1:4, function(i) {crossprod(A + i)}, mc.cores = 1))
+#system.time(res <- mclapply(1:4, function(i) {crossprod(A + i)}, mc.cores = 2))
+
 # Cholesky Factorization
 system.time (C <- chol(B))
 # Singular Value Deomposition

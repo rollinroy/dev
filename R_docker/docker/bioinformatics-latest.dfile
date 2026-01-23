@@ -1,4 +1,4 @@
-ARG base_name
+ARG base_name=ubuntu-20.04-hpc
 ARG itag=latest
 FROM $base_name:$itag
 ARG arch_type

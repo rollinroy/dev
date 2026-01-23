@@ -1,4 +1,4 @@
-ARG base_name
+ARG base_name=ubuntu-20.04-hpc
 ARG itag=latest
 FROM $base_name:$itag
 ARG image_type
@@ -21,13 +21,13 @@ RUN if [ "$image_type" = "amd" ]; then \
       dpkg -i libssl-dev_1.1.1f-1ubuntu2.24_amd64.deb; \
       echo "Installing RStudio Server for amd"; \
       cd /usr/local/src/Rstudio && \
-      wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-2025.05.0-496-amd64.deb && \
-      gdebi -n rstudio-server-2025.05.0-496-amd64.deb; \
+      wget https://download2.rstudio.org/server/focal/amd64/rstudio-server-2026.01.0-392-amd64.deb && \
+      gdebi -n rstudio-server-2026.01.0-392-amd64.deb; \
     else \
       echo "Installing RStudio Server for arm"; \
       cd /usr/local/src/Rstudio && \
-      wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2025.08.0-daily-158-arm64.deb  && \
-      gdebi -n rstudio-server-2025.08.0-daily-158-arm64.deb; \
+      wget https://s3.amazonaws.com/rstudio-ide-build/server/jammy/arm64/rstudio-server-2026.02.0-daily-18-arm64.deb  && \
+      gdebi -n rstudio-server-2026.02.0-daily-18-arm64.deb; \
     fi
 #RUN rstudio-server start
 

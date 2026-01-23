@@ -33,8 +33,10 @@ RUN mkdir /usr/local/R-"$R_VERSION"/lib/R/site-library
 RUN ln -sf /usr/local/R-$R_VERSION/lib/R/bin/R /usr/local/bin/R; \
     ln -sf /usr/local/R-$R_VERSION/lib/R/bin/Rscript /usr/local/bin/Rscript
 
+# copy the rscript to add desired packages and install
+COPY ./install_rpackages.R /usr/local/src/R
+
 # install ggplot2 + dependencies
-RUN echo "Install ggplot2 + dependencies ..."; \
+RUN echo "Install additional R packages ..."; \
     cd /usr/local/src/R && \
-    echo 'install.packages("ggplot2",repos="https://ftp.osuosl.org/pub/cran/",dependencies=TRUE)' > ./install_ggplot2.R && \
-    Rscript ./install_ggplot2.R
+    Rscript ./install_rpackages.R

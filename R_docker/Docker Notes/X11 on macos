@@ -1,0 +1,22 @@
+Running graphics apps (e.g., ggplot2) on macos using docker images (rollinroy/r-4.5.2-arm):
+Preliminaries:
+  1. Install Xquartz on mac
+  2. Create xinit directory:
+mkdir -p ~/.xinitrc.d
+  3. Create xhost config file:
+cat << 'EOF' > ~/.xinitrc.d/xhost-config.sh
+#!/bin/sh
+
+xhost +127.0.0.1
+xhost +localhost
+xhost +$(hostname)
+EOF
+  4. chmod  +x  ~/.xinitrc.d/xhost-config.sh
+After preliminaries:
+  1.check xhost to verify authenticated networks/clients
+xhost
+  2. run docker image with -e option
+docker run --rm -it -e DISPLAY=host.docker.internal:0 rollinroy/r-4.5.2-arm
+
+Note: To run X apps (e.g., xclock), get the x apps:
+apt-get update && apt-get install -qqy x11-apps

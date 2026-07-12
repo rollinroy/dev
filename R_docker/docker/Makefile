@@ -1,7 +1,7 @@
 # common config macros (changing)
 OS_VERSION = 24.04
-R_VERSION=4.4.2
-RS_VERSION=2024.09.1-394
+R_VERSION=4.6.0
+RS_VERSION=2026.05.0-daily+205
 ARCH_HOST := $(shell uname -m)
 ifeq ($(ARCH_HOST),arm64)
 	IMAGE_TYPE=arm

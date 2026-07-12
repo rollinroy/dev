@@ -2,7 +2,7 @@ ARG base_name=ubuntu-20.04-hpc
 ARG itag=latest
 FROM $base_name:$itag
 ARG arch_type
-ARG ra_version=4.3.1
+ARG ra_version=4.6.0
 
 ENV R_VERSION=$ra_version
 
